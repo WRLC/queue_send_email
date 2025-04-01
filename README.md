@@ -22,7 +22,7 @@ Storage queue-triggered Azure Function to send email via external webhook.
     "string2",
     "..."
   ],
-  "rows": [  // list of table rows (dictionaries of key-value pairs; keys should match column names)
+  "rows": [  // list of table rows (dict of key-value pairs; keys should match columns)
     {
       "string": "string",
       "string2": "string",
@@ -34,7 +34,7 @@ Storage queue-triggered Azure Function to send email via external webhook.
       "...": "..."
     }
   ],
-  "recipents": "user@example.com, user2@example.com",  // comma and space separated string of email addresses
+  "recipents": "user@example.com, user2@example.com",  // comma-separated string of addresses
   "sender": "user3@example.com"  // sender email address
 }
 ```
