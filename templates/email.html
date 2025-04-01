@@ -1,0 +1,45 @@
+{% block content %}
+    {% if header is defined %}
+        <div style="margin-bottom: 10px">
+            {{ header }}
+        </div>
+    {% endif %}
+    <table style="text-align: left; border-collapse: collapse; width: 100%">
+        {% if caption is defined %}
+            <caption style="padding: 5px; text-align: left; font-weight: bold">{{ caption }}</caption>
+        {% endif %}
+        {% if columns is defined %}
+            <thead style="vertical-align: top; border-top: 1px solid #000">
+                <tr style="padding: 5px; border-top: 1px solid #000; border-bottom: 1px solid #000">
+                {% for col in columns %}
+                    {% if col != '0' %}
+                        <th scope="col" style="padding: 5px">{{ col }}</th>
+                    {% endif %}
+                {% endfor %}
+                </tr>
+            </thead>
+        {% endif %}
+        {% if rows is defined %}
+            <tbody style="vertical-align: top">
+                {% for row in rows %}
+                <tr style="padding: 5px; text-align: left; border-bottom: 1px solid #333">
+                    {% for col in columns %}
+                        {% if col != '0' %}
+                            {% if row[col] %}
+                                <td style="padding: 5px">{{ row[col] }}</td>
+                            {% else %}
+                                <td style="padding: 5px">&nbsp;</td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        {% endif %}
+    </table>
+    {% if footer is defined %}
+        <div style="margin-top: 10px">
+            {{ footer }}
+        </div>
+    {% endif %}
+{% endblock %}
