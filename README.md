@@ -7,6 +7,7 @@ Storage queue-triggered Azure Function to send email via external webhook.
 - WEBHOOK_URL: The URL of the webhook to send the email data to.
 - WEBHOOK_USER: The username for basic authentication to the webhook.
 - WEBHOOK_PASS: The password for basic authentication to the webhook.
+- DEFAULT_SENDER: The default sender email address to use if not provided in the queue message.
 
 ## Incoming Queue Message Format
 
