@@ -5,6 +5,9 @@ import json
 import logging
 import os
 import re
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 # noinspection PyPackageRequirements
 import azure.functions as func
 from jinja2 import Environment, FileSystemLoader, select_autoescape, Template
@@ -18,18 +21,11 @@ if not os.getenv('SOURCE_QUEUE'):
     raise ValueError('SOURCE_QUEUE not set')  # Exit if the source queue is not set
 
 
-# pylint: disable=too-few-public-methods
 class Email:
     """
     Email object
     """
-    def __init__(
-            self,
-            subject: str,
-            body: str,
-            recipients: str,
-            sender: str,
-    ):
+    def __init__(self, subject: str, body: str, recipients: str, sender: str,) -> None:
         """
         Email object
 
@@ -39,10 +35,10 @@ class Email:
         :param sender: str
         :return: None
         """
-        self.subject = subject
-        self.body = body
-        self.recipients = recipients
-        self.sender = sender
+        self.subject: str = subject
+        self.body: str = body
+        self.recipients: str = recipients
+        self.sender: str = sender
 
     def send(self) -> None:
         """
@@ -50,11 +46,55 @@ class Email:
 
         :return: None
         """
-        if not os.getenv('WEBHOOK_URL'):  # If the webhook URL is not set
-            raise ValueError('WEBHOOK_URL not set')  # Exit if the webhook URL is not set
+        if os.getenv('SMTP_SERVER'):  # If the SMTP server is set
+            self.send_smtp()  # Send the email using SMTP
 
-        if not os.getenv('WEBHOOK_USER') or not os.getenv('WEBHOOK_PASS'):  # If the webhook user or password is not set
-            raise ValueError('WEBHOOK_USER or WEBHOOK_PASS not set')  # Exit if the webhook user or password is not set
+        elif os.getenv('WEBHOOK_URL'):  # If the webhook URL is set
+            self.send_webhook()  # Send the email using webhook
+        else:  # If neither SMTP server nor webhook URL is set
+            raise ValueError('No SMTP server or webhook URL set')  # Raise error
+
+    def send_smtp(self) -> None:
+        """
+        Send the email using SMTP
+        :return:
+        """
+
+        server: str = os.getenv('SMTP_SERVER', '')
+        port: int = int(os.getenv('SMTP_PORT', '587'))
+        username: str = os.getenv('SMTP_USERNAME', '')
+        password: str = os.getenv('SMTP_PASSWORD', '')
+
+        if not all([server, port, username, password]):
+            raise ValueError('SMTP configuration incomplete')
+
+        msg: MIMEMultipart = MIMEMultipart('alternative')
+        msg['Subject'] = self.subject
+        msg['From'] = self.sender
+        msg['To'] = self.recipients
+
+        html_part: MIMEText = MIMEText(self.body, 'html')
+        msg.attach(html_part)
+
+        try:
+            smtp: smtplib.SMTP = smtplib.SMTP(server, port)
+            smtp.ehlo()
+            smtp.starttls()
+            smtp.login(username, password)
+            smtp.sendmail(self.sender, self.recipients.split(','), msg.as_string())
+            smtp.quit()
+            logging.info('Email sent via SMTP to %s', self.recipients)
+        except Exception as e:
+            logging.error('SMTP Error: %s', str(e))
+            raise
+
+    def send_webhook(self) -> None:
+        """
+        Send the email using webhook
+        :return:
+        """
+        if not os.getenv('WEBHOOK_USER') or not os.getenv('WEBHOOK_PASS'):
+            raise ValueError('WEBHOOK_USER and WEBHOOK_PASS must be set')
 
         basic: HTTPBasicAuth = HTTPBasicAuth(os.getenv('WEBHOOK_USER'), os.getenv('WEBHOOK_PASS'))  # auth for webhook
 
@@ -139,11 +179,11 @@ def construct_email(message) -> Email:
     return email
 
 
-def render_template(template, **kwargs) -> str:
+def render_template(template_name: str, **kwargs) -> str:
     """
     Render a Jinja template with the variables passed in
 
-    :param template: str
+    :param template_name: str
     :param kwargs: dict
     :return: str
     """
@@ -152,7 +192,7 @@ def render_template(template, **kwargs) -> str:
         autoescape=select_autoescape(['html', 'xml'])  # autoescape html and xml
     )
 
-    template: Template = env.get_template(template)  # get the template
+    template: Template = env.get_template(template_name)  # get the template
 
     body: str = template.render(**kwargs)  # render the template with the variables passed in
 
