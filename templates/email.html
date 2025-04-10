@@ -11,9 +11,9 @@
         {% if columns is defined %}
             <thead style="vertical-align: top; border-top: 1px solid #000">
                 <tr style="padding: 5px; border-top: 1px solid #000; border-bottom: 1px solid #000">
-                {% for col in columns %}
-                    {% if col != '0' %}
-                        <th scope="col" style="padding: 5px">{{ col }}</th>
+                {% for key, value in columns.items() %}
+                    {% if value != '0' %}
+                        <th scope="col" style="padding: 5px">{{ value }}</th>
                     {% endif %}
                 {% endfor %}
                 </tr>
@@ -23,10 +23,10 @@
             <tbody style="vertical-align: top">
                 {% for row in rows %}
                 <tr style="padding: 5px; text-align: left; border-bottom: 1px solid #333">
-                    {% for col in columns %}
-                        {% if col != '0' %}
-                            {% if row[col] %}
-                                <td style="padding: 5px">{{ row[col] }}</td>
+                    {% for key, value in columns.items() %}
+                        {% if value != '0' %}
+                            {% if row[value] %}
+                                <td style="padding: 5px">{{ row[value] }}</td>
                             {% else %}
                                 <td style="padding: 5px">&nbsp;</td>
                             {% endif %}
