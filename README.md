@@ -17,20 +17,20 @@ Storage queue-triggered Azure Function to send email via external webhook.
   "header": "string",  // email intro text
   "footer": "string",  // email footer text
   "caption": "string",  // table caption
-  "columns": [  // list of table column names
-    "string",
-    "string2",
-    "..."
-  ],
-  "rows": [  // list of table rows (dict of key-value pairs; keys should match columns)
+  "columns": {  // dictionary of table column names
+    "key": "value",
+    "key2": "value2",
+    "...": "..."
+  },
+  "rows": [  // list of table rows key-value pairs (key should match a column value)
     {
-      "string": "string",
-      "string2": "string",
+      "value": "string",
+      "value2": "string2",
       "...": "..."
     },
     {
-      "string": "string",
-      "string2": "string",
+      "value": "string3",
+      "value2": "string4",
       "...": "..."
     }
   ],
